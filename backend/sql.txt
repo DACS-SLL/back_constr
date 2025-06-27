@@ -1,0 +1,162 @@
+-- Tabla de roles
+CREATE TABLE rol (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR NOT NULL
+);
+
+-- Tabla de usuarios
+CREATE TABLE usuario (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR NOT NULL,
+    email VARCHAR UNIQUE NOT NULL,
+    contrasena_hash VARCHAR NOT NULL,
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    activo BOOLEAN DEFAULT TRUE,
+    rol_id INT REFERENCES rol(id)
+);
+
+-- Tabla de postulantes
+CREATE TABLE postulante (
+    id SERIAL PRIMARY KEY,
+    usuario_id INT UNIQUE REFERENCES usuario(id),
+    nombre_completo VARCHAR NOT NULL,
+    fecha_nacimiento DATE,
+    telefono VARCHAR
+);
+
+-- Tabla de empresas
+CREATE TABLE empresa (
+    id SERIAL PRIMARY KEY,
+    usuario_id INT UNIQUE REFERENCES usuario(id),
+    nombre VARCHAR NOT NULL,
+    rubro VARCHAR,
+    direccion VARCHAR,
+    descripcion TEXT
+);
+
+-- Tabla de categorías
+CREATE TABLE categoria (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR NOT NULL
+);
+
+-- Tabla de ofertas laborales
+CREATE TABLE oferta_laboral (
+    id SERIAL PRIMARY KEY,
+    empresa_id INT REFERENCES empresa(id),
+    titulo VARCHAR NOT NULL,
+    descripcion TEXT,
+    ubicacion VARCHAR,
+    fecha_publicacion DATE DEFAULT CURRENT_DATE,
+    categoria_id INT REFERENCES categoria(id),
+    estado VARCHAR DEFAULT 'activa'
+);
+
+-- Tabla de postulaciones
+CREATE TABLE postulacion (
+    id SERIAL PRIMARY KEY,
+    postulante_id INT REFERENCES postulante(id),
+    oferta_id INT REFERENCES oferta_laboral(id),
+    fecha_postulacion DATE DEFAULT CURRENT_DATE,
+    estado VARCHAR DEFAULT 'pendiente'
+);
+
+-- Tabla de entrevistas
+CREATE TABLE entrevista (
+    id SERIAL PRIMARY KEY,
+    postulacion_id INT REFERENCES postulacion(id),
+    fecha TIMESTAMP,
+    resultado VARCHAR
+);
+
+-- Tabla de evaluaciones
+CREATE TABLE evaluacion (
+    id SERIAL PRIMARY KEY,
+    postulacion_id INT REFERENCES postulacion(id),
+    evaluador_id INT REFERENCES usuario(id),
+    comentario TEXT,
+    puntaje INT CHECK (puntaje >= 0 AND puntaje <= 100)
+);
+
+-- Tabla de currículums
+CREATE TABLE curriculum (
+    id SERIAL PRIMARY KEY,
+    postulante_id INT REFERENCES postulante(id),
+    ruta_archivo VARCHAR,
+    fecha_subida TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    resumen TEXT,
+    competencias TEXT,
+    idiomas VARCHAR,
+    linkedin_url VARCHAR,
+    github_url VARCHAR,
+    portafolio_url VARCHAR,
+    nombre_original VARCHAR
+);
+
+
+-- Tabla de educación
+CREATE TABLE educacion (
+    id SERIAL PRIMARY KEY,
+    curriculum_id INT REFERENCES curriculum(id),
+    institucion VARCHAR,
+    titulo VARCHAR,
+    fecha_inicio DATE,
+    fecha_fin DATE
+);
+
+-- Tabla de experiencia laboral
+CREATE TABLE experiencia_laboral (
+    id SERIAL PRIMARY KEY,
+    curriculum_id INT REFERENCES curriculum(id),
+    empresa VARCHAR,
+    cargo VARCHAR,
+    descripcion TEXT,
+    fecha_inicio DATE,
+    fecha_fin DATE
+);
+
+-- Tabla de habilidades (si deseas que sea libre, sin asociación directa)
+CREATE TABLE habilidad (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR NOT NULL
+);
+
+-- Tabla de token blacklist (para invalidar tokens)
+CREATE TABLE token_blacklist (
+    id SERIAL PRIMARY KEY,
+    token TEXT NOT NULL,
+    status VARCHAR,
+    fecha_revocado TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabla de mensajes entre usuarios
+CREATE TABLE mensaje (
+    id SERIAL PRIMARY KEY,
+    emisor_id INT REFERENCES usuario(id),
+    receptor_id INT REFERENCES usuario(id),
+    contenido TEXT,
+    fecha_envio TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabla de notificaciones
+CREATE TABLE notificacion (
+    id SERIAL PRIMARY KEY,
+    usuario_id INT REFERENCES usuario(id),
+    mensaje TEXT,
+    leida BOOLEAN DEFAULT FALSE,
+    fecha_envio TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabla de registro de actividad
+CREATE TABLE registro_actividad (
+    id SERIAL PRIMARY KEY,
+    usuario_id INT REFERENCES usuario(id),
+    action VARCHAR,
+    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE curriculum_habilidad (
+    curriculum_id INT REFERENCES curriculum(id) ON DELETE CASCADE,
+    habilidad_id INT REFERENCES habilidad(id) ON DELETE CASCADE,
+    PRIMARY KEY (curriculum_id, habilidad_id)
+);

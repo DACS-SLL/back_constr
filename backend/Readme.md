@@ -1,0 +1,1 @@
+## Recuerda que debes crear un venv e instalar todos los requirements

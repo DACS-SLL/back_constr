@@ -1,0 +1,57 @@
+from fastapi import APIRouter, Depends, UploadFile, File
+from sqlalchemy.orm import Session
+from app.schemas.curriculum import Curriculum, CurriculumCreate
+from app.crud import curriculum as crud
+from app.dependencies.auth import require_role
+from app.core.database import get_db
+from typing import List
+from fastapi.responses import FileResponse
+import os
+from uuid import uuid4
+
+router = APIRouter(prefix="/curriculums", tags=["Curriculums"])
+UPLOAD_DIR = "uploads/curriculums"
+
+
+@router.get("/", response_model=List[Curriculum])
+def listar_curriculums(
+    postulante_id: int | None = None,
+    skip: int = 0,
+    limit: int = 20,
+    db: Session = Depends(get_db)
+):
+    return crud.get_curriculums(db, postulante_id, skip, limit)
+
+
+@router.post("/", response_model=Curriculum)
+def crear_curriculum(curriculum: CurriculumCreate, db: Session = Depends(get_db),
+                     _: dict = Depends(require_role("admin","postulante"))):
+    return crud.create_curriculum(db, curriculum)
+
+@router.post("/upload")
+def subir_curriculum(
+    postulante_id: int,
+    archivo: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
+    extension = archivo.filename.split('.')[-1]
+    nuevo_nombre = f"{uuid4()}.{extension}"
+    ruta_archivo = os.path.join(UPLOAD_DIR, nuevo_nombre)
+
+    with open(ruta_archivo, "wb") as f:
+        f.write(archivo.file.read())
+
+    nuevo = CurriculumCreate(
+        postulante_id=postulante_id,
+        ruta_archivo=ruta_archivo,
+        nombre_original=archivo.filename,
+    )
+    return crud.create_curriculum(db, nuevo)
+
+@router.get("/{curriculum_id}/download")
+def descargar_curriculum(curriculum_id: int, db: Session = Depends(get_db)):
+    curriculum = crud.get_curriculum(db, curriculum_id)
+    if not curriculum:
+        raise HTTPException(status_code=404, detail="No encontrado")
+    return FileResponse(curriculum.ruta_archivo, filename=curriculum.nombre_original)
