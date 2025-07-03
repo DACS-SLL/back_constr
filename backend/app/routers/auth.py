@@ -29,12 +29,10 @@ def register(usuario: UsuarioRegistroCreate, db: Session = Depends(get_db)):
     if rol.nombre not in ROLES_PERMITIDOS:
         raise HTTPException(status_code=403, detail="No se permite crear usuarios con este rol")
                             
-    hashed_pwd = pwd_context.hash(usuario.contrasena)
-
     nuevo_usuario = UsuarioCreate(
         email=usuario.email,
         nombre=usuario.nombre,
-        contrasena=pwd_context.hash(usuario.contrasena),
+        contrasena=usuario.contrasena,
         rol_id=usuario.rol_id
     )
     return create_usuario(db, nuevo_usuario)

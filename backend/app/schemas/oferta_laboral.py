@@ -21,14 +21,29 @@ class OfertaLaboral(OfertaLaboralBase):
     class Config:
         orm_mode = True
 
+class EmpresaOut(BaseModel):
+    id: int
+    nombre: str
+
+class CategoriaOut(BaseModel):
+    id: int
+    nombre: str
 class OfertaLaboralOut(BaseModel):
     id: int
     titulo: str
     descripcion: str
     fecha_publicacion: date
     ubicacion: str
-    categoria_id: int
     estado: str
+    empresa: EmpresaOut
+    categoria: CategoriaOut
 
     class Config:
         orm_mode = True
+
+class OfertaLaboralUpdate(BaseModel):
+    titulo: Optional[str] = None
+    descripcion: Optional[str] = None
+    ubicacion: Optional[str] = None
+    estado: Optional[str] = None
+    categoria_id: Optional[int] = None

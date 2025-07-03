@@ -10,7 +10,7 @@ class ExperienciaLaboralBase(BaseModel):
     fecha_fin: Optional[date]
 
 class ExperienciaLaboralCreate(ExperienciaLaboralBase):
-    curriculum_id: int
+    curriculum_id: Optional[int] = None
 
 class ExperienciaLaboral(ExperienciaLaboralBase):
     id: int

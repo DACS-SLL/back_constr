@@ -19,6 +19,15 @@ class Usuario(UsuarioBase):
 
     class Config:
         from_attributes = True
+class UsuarioUpdate(BaseModel):
+    nombre: Optional[str]
+    email: Optional[EmailStr]
+    contrasena: Optional[str]
+class UsuarioRoleUpdate(BaseModel):
+    rol: str
+
+class UsuarioEstadoUpdate(BaseModel):
+    activo: bool
 
 class UsuarioRegistroCreate(BaseModel):
     email: EmailStr

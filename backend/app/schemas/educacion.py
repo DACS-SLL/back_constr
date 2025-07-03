@@ -9,7 +9,7 @@ class EducacionBase(BaseModel):
     fecha_fin: Optional[date]
 
 class EducacionCreate(EducacionBase):
-    curriculum_id: int
+    curriculum_id: Optional[int] = None
 
 class Educacion(EducacionBase):
     id: int

@@ -14,3 +14,19 @@ def listar_habilidades(db: Session = Depends(get_db)):
 @router.post("/", response_model=Habilidad)
 def crear_habilidad(habilidad: HabilidadCreate, db: Session = Depends(get_db)):
     return crud.create_habilidad(db, habilidad)
+
+@router.post("/asignar")
+def asignar_habilidad_a_curriculum(
+    curriculum_id: int,
+    habilidad_id: int,
+    db: Session = Depends(get_db)
+):
+    return crud.asignar_habilidad(db, curriculum_id, habilidad_id)
+
+@router.delete("/remover")
+def remover_habilidad_de_curriculum(
+    curriculum_id: int,
+    habilidad_id: int,
+    db: Session = Depends(get_db)
+):
+    return crud.remover_habilidad(db, curriculum_id, habilidad_id)

@@ -5,7 +5,7 @@ from app.routers import (
     rol, usuario, postulante, habilidad, curriculum,
     empresa, categoria, oferta_laboral, postulacion,
     entrevista, evaluacion, educacion, experiencia_laboral,
-    mensaje, notificacion, registro_actividad, auth, dashboard
+    mensaje, notificacion, registro_actividad, auth, dashboard, admin_reports
 )
 
 # Crear tablas en la base de datos (solo en desarrollo)
@@ -51,6 +51,7 @@ app.include_router(mensaje.router)
 app.include_router(notificacion.router)
 app.include_router(registro_actividad.router)
 app.include_router(dashboard.router)
+app.include_router(admin_reports.router)
 
 @app.get("/")
 def root():

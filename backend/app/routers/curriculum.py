@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Depends, UploadFile, File
+from fastapi import APIRouter, Depends, UploadFile, File, HTTPException, Form
 from sqlalchemy.orm import Session
-from app.schemas.curriculum import Curriculum, CurriculumCreate
+from app.schemas.curriculum import Curriculum, CurriculumCreate, CurriculumUpdate
+from app.models.curriculum import Curriculum as CurriculumModel
 from app.crud import curriculum as crud
 from app.dependencies.auth import require_role
 from app.core.database import get_db
@@ -8,9 +9,20 @@ from typing import List
 from fastapi.responses import FileResponse
 import os
 from uuid import uuid4
+from sqlalchemy.orm import joinedload
 
 router = APIRouter(prefix="/curriculums", tags=["Curriculums"])
 UPLOAD_DIR = "uploads/curriculums"
+
+def get_curriculum_by_postulante(db: Session, postulante_id: int):
+    return db.query(CurriculumModel)\
+        .options(
+            joinedload(CurriculumModel.educacion),
+            joinedload(CurriculumModel.experiencia),
+            joinedload(CurriculumModel.habilidades)
+        )\
+        .filter(CurriculumModel.postulante_id == postulante_id)\
+        .first()
 
 
 @router.get("/", response_model=List[Curriculum])
@@ -32,7 +44,6 @@ def crear_curriculum(curriculum: CurriculumCreate, db: Session = Depends(get_db)
 def subir_curriculum(
     postulante_id: int,
     archivo: UploadFile = File(...),
-    db: Session = Depends(get_db)
 ):
     os.makedirs(UPLOAD_DIR, exist_ok=True)
     extension = archivo.filename.split('.')[-1]
@@ -42,12 +53,8 @@ def subir_curriculum(
     with open(ruta_archivo, "wb") as f:
         f.write(archivo.file.read())
 
-    nuevo = CurriculumCreate(
-        postulante_id=postulante_id,
-        ruta_archivo=ruta_archivo,
-        nombre_original=archivo.filename,
-    )
-    return crud.create_curriculum(db, nuevo)
+    return {"ruta_archivo": ruta_archivo, "nombre_original": archivo.filename}
+
 
 @router.get("/{curriculum_id}/download")
 def descargar_curriculum(curriculum_id: int, db: Session = Depends(get_db)):
@@ -55,3 +62,19 @@ def descargar_curriculum(curriculum_id: int, db: Session = Depends(get_db)):
     if not curriculum:
         raise HTTPException(status_code=404, detail="No encontrado")
     return FileResponse(curriculum.ruta_archivo, filename=curriculum.nombre_original)
+
+@router.get("/mio", response_model=Curriculum)
+def obtener_mi_curriculum(
+    db: Session = Depends(get_db),
+    usuario = Depends(require_role("postulante"))
+):
+    return crud.get_curriculum_by_postulante(db, postulante_id=usuario["id"])
+
+@router.put("/{curriculum_id}", response_model=Curriculum)
+def actualizar_curriculum(
+    curriculum_id: int,
+    datos: CurriculumUpdate,
+    db: Session = Depends(get_db),
+    usuario = Depends(require_role("postulante"))
+):
+    return crud.update_curriculum(db, curriculum_id, datos, usuario.id)

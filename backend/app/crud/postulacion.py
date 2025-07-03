@@ -1,16 +1,19 @@
 from sqlalchemy.orm import Session
 from app.models.postulacion import Postulacion
+from sqlalchemy.orm import joinedload
 from app.schemas.postulacion import PostulacionCreate
 
 def get_postulacion(db: Session, postulacion_id: int):
     return db.query(Postulacion).filter(Postulacion.id == postulacion_id).first()
 
 def get_postulaciones(db: Session, postulante_id=None, oferta_id=None, skip=0, limit=20):
-    query = db.query(Postulacion)
+    query = db.query(Postulacion).options(joinedload(Postulacion.postulante))  # 👈 JOIN
+
     if postulante_id:
         query = query.filter(Postulacion.postulante_id == postulante_id)
     if oferta_id:
         query = query.filter(Postulacion.oferta_id == oferta_id)
+
     return query.offset(skip).limit(limit).all()
 
 
