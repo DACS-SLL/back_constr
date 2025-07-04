@@ -21,7 +21,7 @@ app = FastAPI(
 origins = [
     "http://localhost",
     "http://localhost:5173",  # para Vue
-    "https://tu-dominio-en-produccion.com",
+    "https://tu-app-en-vercel.vercel.app",
 ]
 
 app.add_middleware(
