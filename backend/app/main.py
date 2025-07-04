@@ -26,7 +26,7 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://front-constr.vercel.app"],    
+    allow_origins=["https://front-constr.vercel.app", "http://localhost", "http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
