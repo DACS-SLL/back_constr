@@ -21,12 +21,12 @@ app = FastAPI(
 origins = [
     "http://localhost",
     "http://localhost:5173",  # para Vue
-    "https://tu-app-en-vercel.vercel.app",
+    "https://front-constr.vercel.app",
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],    
+    allow_origins=["https://front-constr.vercel.app"],    
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
